@@ -4,7 +4,12 @@ import com.musicg.wave.extension.Spectrogram;
 
 import java.awt.*;
 import java.awt.image.*;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
 
 import javax.imageio.ImageIO;
 
@@ -13,40 +18,74 @@ public class Main {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		
+		/*
+		 * Variables
+		 */
+		String name = "Hello";
+		String scaleHeight = "20";
+		String baseHeight = "5";
 		
-		String name = "1";
 		String outFolder = "out/";
 		String filename = name+".wav";
 		String outputName = name+".jpg";
 		
 
-		// create a wave object
+		System.out.println("Converting "+filename+" to a printable STL file");
+		
+		/*
+		 * Creating the Spectrogram
+		 */
 		Wave wave = new Wave(filename);
 		Spectrogram spectrogram = new Spectrogram(wave);
 
-		// change the spectrogram representation
 		int fftSampleSize = 512;
 		int overlapFactor = 2;
 		spectrogram = new Spectrogram(wave, fftSampleSize, overlapFactor);
-
-//		double[][] spec1Data = spectrogram.getAbsoluteSpectrogramData();
+		
 		double[][] spec1Data = spectrogram.getNormalizedSpectrogramData();
 		GraphicRender render = new GraphicRender();
 		render.renderSpectrogramData(spec1Data, outFolder+outputName);
-
-		// Graphic render
-		// GraphicRender render = new GraphicRender();
-		// render.setHorizontalMarker(1);
-		// render.setVerticalMarker(1);
-		// render.renderSpectrogram(spec1Data, outFolder + "/spectrogram.jpg");
-
-		// render.renderSpectrogram(spectrogram, outFolder +
-		// "/spectrogram2.jpg");
-
-		GrayScale(outputName, outFolder);
+		System.out.println("Spectrogram Created");
 		
+		
+		/*
+		 * Image Processing
+		 * Currently only converting the image to grey scale, need to figure out a process to make a printable image
+		 */
+		GrayScale(outputName, outFolder);
+		System.out.println("Image Processed");
+		
+		
+		/*
+		 * Converting Spectrogram to STL file.
+		 */
+		ProcessBuilder pb = new ProcessBuilder("java", "-jar", "../libs/heightmap2stl.jar",""+outputName,scaleHeight,baseHeight);
+		pb.directory(new File("./out"));
+		try {
+			System.out.println("Starting Conversion Process");
+			String line;
+			Process p = pb.start();
+			BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+			while ((line = input.readLine()) != null) {
+				System.out.println(line);
+			}
+			int status = p.waitFor();
+			System.out.println(status);
+			input.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println("Finished Process");
 	}
 
+	
+/*
+ * GrayScale function, converts an image to grayscale
+ */
 	private static void GrayScale(String Filename, String outFolder) {
 
 		BufferedImage image;
