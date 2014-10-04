@@ -1,0 +1,97 @@
+//bit depth = 16 or 8
+var depth = bitDepth();
+
+//maxVal
+var maxVal = pow(2, depth)-1;
+
+
+print("Linear stretching, Begin, please wait...");
+original = imageToArray();	
+LinStretch = LS(original, getWidth(), getHeight());	
+arrayToImage(LinStretch);
+print("Done");
+updateDisplay();
+
+function imageToArray() {
+	height = getHeight();
+	width = getWidth();
+	a = newArray(width * height);
+	for (y = 0; y < height; y++) {
+		for (x = 0; x < width; x++) {
+			a[y * getWidth() + x] = getPixel(x, y);
+		}
+	}
+	return a;
+}
+
+// writes an array to the active image
+function arrayToImage(array) {
+	width = getWidth();
+	height = getHeight();
+	for (y = 0; y < height; y++) {
+		for (x = 0; x < width; x++) {
+			setPixel(x, y, array[y * width + x]);
+		}
+	}
+}
+
+// performs Linear stretching as per Q2_a on array, returns output array and does not alter input array.
+function LS(array, width, height) {	
+	out = newArray(array.length);
+	//implement your code here
+	
+	//Create the histogram
+	cHisto = newArray(maxVal+1);
+	for(i = 0; i < lengthOf(array); i++){
+		cHisto[array[i]] = cHisto[array[i]] + 1;
+	}		
+
+	//intialize the varibles
+	gmin = 0;
+	gmax = maxVal;
+	fmin = 30000;
+	fmax = 30000;
+
+	//set fmin as the smallest pixel intensity that has a count greater than zero.
+	for(j = 0; j < lengthOf(cHisto); j++){
+		if(cHisto[j] > 0){
+			fmin = j;
+			j = lengthOf(cHisto);
+		}	
+	}
+
+	//set fmax as the largest pixel intensity that has a count greater than zero.
+	for(k = lengthOf(cHisto)-1; k > 0; k--){
+		if(cHisto[k] > 0){
+			fmax = k;
+			k = 0;
+		}	
+	}
+
+	//Create array of new stretched pixels
+	for(l = 0; l < lengthOf(array); l++){
+		out[l] = adjust(array[l], gmin, gmax, fmin, fmax);
+	}
+	
+	return out;
+}
+
+//Calculate pixel g
+function adjust(pixelv, gmin, gmax, fmin, fmax){
+
+	a = pixelv - fmin;
+	b = (gmax - gmin)/(fmax-fmin);
+	s = (a*b) + gmin;
+
+	if(s < gmin){
+		g = gmin;
+	}
+	else if(s <= gmax){
+		g = s;
+	}
+	else if(s > gmax){
+		g = gmax;
+	}
+
+	return g;
+}
