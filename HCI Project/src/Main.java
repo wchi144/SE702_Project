@@ -14,7 +14,7 @@ public class Main {
 		// TODO Auto-generated method stub
 		
 		
-		String name = "piano";
+		String name = "1";
 		String outFolder = "out/";
 		String filename = name+".wav";
 		String outputName = name+".jpg";
@@ -29,7 +29,8 @@ public class Main {
 		int overlapFactor = 2;
 		spectrogram = new Spectrogram(wave, fftSampleSize, overlapFactor);
 
-		double[][] spec1Data = spectrogram.getAbsoluteSpectrogramData();
+//		double[][] spec1Data = spectrogram.getAbsoluteSpectrogramData();
+		double[][] spec1Data = spectrogram.getNormalizedSpectrogramData();
 		GraphicRender render = new GraphicRender();
 		render.renderSpectrogramData(spec1Data, outFolder+outputName);
 
